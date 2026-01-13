@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>breath 4/4 – נשימה להרגעה</title>
+  <style>
+    :root{
+      --bg:#070c16;
+      --panel:rgba(255,255,255,0.06);
+      --stroke:rgba(255,255,255,0.12);
+      --text:#eef4ff;
+      --muted:#b7c7e6;
+      --accent:rgba(124,199,255,0.22);
+    }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(1100px 700px at 70% 20%, #173257 0%, #0b1220 45%, var(--bg) 100%);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    .card{
+      width:min(520px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border:1px solid rgba(255,255,255,0.10);
+      border-radius:20px;
+      padding:18px 16px 16px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+      backdrop-filter: blur(10px);
+    }
+    header{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:space-between;
+      margin-bottom:10px;
+    }
+    h1{ font-size:18px; margin:0; }
+    .sub{ margin:4px 0 0; color:var(--muted); font-size:13px; line-height:1.35; }
+    .tag{
+      font-size:12px;
+      color: rgba(238,244,255,0.85);
+      background: rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.10);
+      padding:6px 10px;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+
+    .stage{
+      margin-top:14px;
+      background: rgba(10,20,40,0.45);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:18px;
+      padding:16px;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .stage::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background: radial-gradient(circle at 50% 50%, rgba(124,199,255,0.12), transparent 55%);
+      opacity:0.85;
+      transform: scale(0.8);
+      transition: transform 300ms ease, opacity 300ms ease;
+      pointer-events:none;
+    }
+    .inhale .stage::before{ transform: scale(1.06); opacity:1; }
+    .exhale .stage::before{ transform: scale(0.78); opacity:0.75; }
+    .paused .stage::before{ opacity:0.55; }
+
+    .phase{ font-size:14px; color:var(--muted); margin-bottom:6px; position:relative; }
+    .instruction{ font-size:22px; margin:0 0 10px; font-weight:650; position:relative; }
+
+    .visualWrap{
+      position:relative;
+      height:210px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin: 6px 0 4px;
+    }
+    .bubble{
+      width:170px;
+      height:170px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:72px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), rgba(255,255,255,0.05));
+      border:1px solid rgba(255,255,255,0.12);
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.25);
+      transform: scale(0.92);
+      transition: transform 250ms ease;
+      user-select:none;
+    }
+    .inhale .bubble{ transform: scale(1.06); }
+    .exhale .bubble{ transform: scale(0.90); }
+
+    .count{
+      position:absolute;
+      bottom:10px;
+      font-size:48px;
+      font-weight:750;
+      letter-spacing:1px;
+      text-shadow: 0 12px 30px rgba(0,0,0,0.6);
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .field{
+      flex:1 1 170px;
+      background: rgba(10,20,40,0.35);
+      border:1px solid rgba(255,255,255,0.10);
+      border-radius:14px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    label{ color:var(--muted); font-size:13px; }
+    .pill{
+      border:1px solid rgba(255,255,255,0.14);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:14px;
+      width:100%;
+      text-align:center;
+    }
+    .pill.active{
+      background: linear-gradient(180deg, var(--accent), rgba(124,199,255,0.08));
+      border-color: rgba(124,199,255,0.35);
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+    button{
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.12);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      cursor:pointer;
+      flex:1 1 120px;
+    }
+    button.primary{
+      background: linear-gradient(180deg, rgba(124,199,255,0.22), rgba(124,199,255,0.08));
+      border-color: rgba(124,199,255,0.35);
+    }
+    button:active{ transform: translateY(1px); }
+
+    .note{
+      margin-top:12px;
+      color:rgba(183,199,230,0.85);
+      font-size:12px;
+      line-height:1.45;
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="app">
+    <header>
+      <div>
+        <h1>breath 4/4 – נשימה במצבי לחץ וחרדה</h1>
+        <p class="sub">שאיפה מהאף עם “פרח”, נשיפה מהפה כמו “כיבוי נר”.</p>
+      </div>
+      <div class="tag" id="statusTag">מוכן</div>
+    </header>
+
+    <div class="stage" id="stageBox" aria-live="polite">
+      <div class="phase" id="phaseLabel">שלב</div>
+      <p class="instruction" id="instruction">לחץ “התחל”</p>
+
+      <div class="visualWrap">
+        <div class="bubble" id="icon" title="ויזואל">🌸</div>
+        <div class="count" id="count">—</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>קצב</label>
+        <div style="display:flex; gap:8px; width:100%;">
+          <button class="pill active" id="mode4">4/4</button>
+          <button class="pill" id="mode3">3/3</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>מסך מלא</label>
+        <button class="pill" id="fsBtn">פתח</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="primary" id="startBtn">התחל</button>
+      <button id="pauseBtn" disabled>השהה</button>
+      <button id="resetBtn">איפוס</button>
+    </div>
+
+    <div class="note">
+      אם יש סחרחורת/אי נוחות — עצור וחזור לנשימה רגילה. זה כלי להרגעה, לא תחליף לטיפול רפואי.
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const app = document.getElementById('app');
+      const phaseLabel = document.getElementById('phaseLabel');
+      const instruction = document.getElementById('instruction');
+      const icon = document.getElementById('icon');
+      const countEl = document.getElementById('count');
+      const statusTag = document.getElementById('statusTag');
+
+      const startBtn = document.getElementById('startBtn');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const resetBtn = document.getElementById('resetBtn');
+
+      const mode4 = document.getElementById('mode4');
+      const mode3 = document.getElementById('mode3');
+
+      const fsBtn = document.getElementById('fsBtn');
+
+      let secondsPerPhase = 4; // 4/4 ברירת מחדל
+      let phase = 'inhale';
+      let remaining = secondsPerPhase;
+
+      let running = false;
+      let paused = false;
+      let timerId = null;
+
+      function setStatus(text){ statusTag.textContent = text; }
+
+      function setUIForPhase(p){
+        phase = p;
+        app.classList.remove('inhale','exhale');
+        app.classList.add(p);
+
+        if(p === 'inhale'){
+          phaseLabel.textContent = 'שאיפה';
+          instruction.textContent = 'נושמים פנימה מהאף';
+          icon.textContent = '🌸';
+          icon.title = 'פרח — שאיפה מהאף';
+        } else {
+          phaseLabel.textContent = 'נשיפה';
+          instruction.textContent = 'מוציאים אוויר מהפה כמו שמכבים נר';
+          icon.textContent = '🕯️';
+          icon.title = 'נר — נשיפה מהפה';
+        }
+      }
+
+      function tick(){
+        countEl.textContent = String(remaining);
+
+        if(remaining <= 0){
+          phase = (phase === 'inhale') ? 'exhale' : 'inhale';
+          setUIForPhase(phase);
+          remaining = secondsPerPhase;
+          countEl.textContent = String(remaining);
+        }
+
+        remaining -= 1;
+      }
+
+      function start(){
+        if(running && paused){
+          paused = false;
+          app.classList.remove('paused');
+          setStatus('רץ');
+          pauseBtn.textContent = 'השהה';
+          timerId = setInterval(tick, 1000);
+          return;
+        }
+        if(running) return;
+
+        remaining = secondsPerPhase;
+        setUIForPhase('inhale');
+        countEl.textContent = String(remaining);
+
+        running = true;
+        paused = false;
+        app.classList.remove('paused');
+        setStatus('רץ');
+
+        startBtn.textContent = 'ממשיך';
+        pauseBtn.disabled = false;
+        pauseBtn.textContent = 'השהה';
+
+        timerId = setInterval(tick, 1000);
+        remaining -= 1;
+      }
+
+      function pause(){
+        if(!running) return;
+        if(paused){
+          start();
+          return;
+        }
+        paused = true;
+        app.classList.add('paused');
+        setStatus('מושהה');
+        pauseBtn.textContent = 'המשך';
+        clearInterval(timerId);
+        timerId = null;
+      }
+
+      function reset(){
+        clearInterval(timerId);
+        timerId = null;
+        running = false;
+        paused = false;
+
+        app.classList.remove('inhale','exhale','paused');
+        phaseLabel.textContent = 'שלב';
+        instruction.textContent = 'לחץ “התחל”';
+        icon.textContent = '🌸';
+        countEl.textContent = '—';
+
+        startBtn.textContent = 'התחל';
+        pauseBtn.textContent = 'השהה';
+        pauseBtn.disabled = true;
+
+        setStatus('מוכן');
+      }
+
+      function setMode(sec){
+        secondsPerPhase = sec;
+        mode4.classList.toggle('active', sec === 4);
+        mode3.classList.toggle('active', sec === 3);
+
+        if(!running){
+          remaining = secondsPerPhase;
+        }
+      }
+
+      async function toggleFullscreen(){
+        try{
+          if(!document.fullscreenElement){
+            await document.documentElement.requestFullscreen();
+            fsBtn.textContent = 'סגור';
+          }else{
+            await document.exitFullscreen();
+            fsBtn.textContent = 'פתח';
+          }
+        }catch(e){
+          // חלק מהדפדפנים במובייל מגבילים מסך מלא – אפשר להתעלם אם לא עובד.
+        }
+      }
+
+      startBtn.addEventListener('click', start);
+      pauseBtn.addEventListener('click', pause);
+      resetBtn.addEventListener('click', reset);
+
+      mode4.addEventListener('click', () => setMode(4));
+      mode3.addEventListener('click', () => setMode(3));
+
+      fsBtn.addEventListener('click', toggleFullscreen);
+
+      // התחלה: מצב 4/4
+      setMode(4);
+      reset();
+    })();
+  </script>
+</body>
+</html>
